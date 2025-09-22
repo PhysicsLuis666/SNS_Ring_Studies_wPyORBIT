@@ -62,6 +62,17 @@ def reorganize_lattice(lattice, start_node, end_node):
     
     return reordered_lattice
 
+def build_injection_region_lattice():
+    lattice = build_lattice()
+    drift_a09 = lattice.getNodeForName("DMCV_A09")
+    drift_b01 = lattice.getNodeForName("DMCV_B01")
+    #Name:DH_A11B, index:27, type: bend teapot
+    #Name:DB23, index:28, type: drift teapot
+    #Name:DDMCV_X01 index:51 type: drift teapot
+    reordered_lattice = reorganize_lattice(lattice, drift_b01, drift_a09)
+    print("method returned lattice starting from exit of A09 to entrance of B01")
+    return reordered_lattice
+
 def split_node(node: AccNode, max_part_length: float) -> AccNode:
     if max_part_length is not None and max_part_length > 0.0:
         if node.getLength() > max_part_length:
@@ -353,16 +364,16 @@ def get_phaseSpaceCoords(lattice, kicker_strengths, target_node, diagnostic_node
     coords = get_phase_space_at_diagnostic(lattice, nodes, target_node, diagnostic_node_name, positionalArgument)
     return coords
 
-def printMtrx(Matrix):
+def returnMtrx(matrix):
     
-    n = Matrix.size()[0]
-    m = Matrix.size()[1]
-    matrix = np.zeros([n,m])
+    n = matrix.size()[0]
+    m = matrix.size()[1]
+    trmatrix = np.zeros([n,m])
     for i in range(n):
         for j in range(m):
-            matrix[i,j] = Matrix.get(i,j)
+            trmatrix[i,j] = matrix.get(i,j)
     
-    print(matrix)
+    return trmatrix
     #return matrix
             
 #-----------------------------timing fucntionality-----------------------------
