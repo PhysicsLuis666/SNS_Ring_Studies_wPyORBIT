@@ -63,6 +63,7 @@ def reorganize_lattice(lattice, start_node, end_node):
     return reordered_lattice
 
 def build_injection_region_lattice():
+    
     lattice = build_lattice()
     drift_a09 = lattice.getNodeForName("DMCV_A09")
     drift_b01 = lattice.getNodeForName("DMCV_B01")

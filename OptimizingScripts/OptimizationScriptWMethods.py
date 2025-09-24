@@ -95,8 +95,8 @@ fxk4_coord = []
 fxpk4_coord = []
 sphase_Goal = []
 fphase_Goal = []
-for x in np.linspace(0.006, 0.0486, 50):   # 50 points
-    for xp in np.linspace(-0.0009, 0.0009, 50):  # 50 points
+for x in np.linspace(0.006, 0.0486, 20):   # 50 points
+    for xp in np.linspace(-0.0009, 0.0009, 20):  # 50 points
         new_kicker_strengths = opt.do_optimize(x, xp, reordered_lattice, "horizontal", target_node, kicker_strengths)
         success = pfo.check_lims(kicker_strengths, new_kicker_strengths)
         coord_foil = pfo.get_phaseSpaceCoords(reordered_lattice, new_kicker_strengths, target_node,  f"foil_bpm_{target_node.getName()}", "entrance")
@@ -145,6 +145,7 @@ os.makedirs("x-xpSpace", exist_ok=True)  # Make sure directory exists
 output_path = os.path.join("x-xpSpace", "allowedx-x'values.png")
 plt.savefig(output_path, dpi=300, bbox_inches="tight")
 
+#k_success = np.array(k_success)
 success_array_coords = np.stack([x_coord_success, xp_coord_success, sx_coord_foil, sxp_coord_foil, sxk4_coord, sxpk4_coord], axis=1)
 fail_array_coords = np.stack([x_coord_fail, xp_coord_fail, fx_coord_foil, fxp_coord_foil, fxk4_coord, fxpk4_coord], axis=1)
 
