@@ -32,6 +32,8 @@ from orbit.kickernodes import SquareRootWaveform, flatTopWaveform
 from orbit.lattice import AccActionsContainer, AccLattice, AccNode, AccNodeBunchTracker
 from orbit.diagnostics.TeapotDiagnosticsNode import TeapotBPMSignalNode
 from orbit.utils.consts import mass_proton, charge_electron, speed_of_light
+import OPTIMIZATIONFunctionPackages as ptf
+import PlotingFunction as plo
 #-----------------------------------------------------------------------------
 
 def build_lattice():
@@ -329,7 +331,7 @@ def get_coords(lattice):
 
 
 def check_lims(k_strengths_old, k_strengths_new):
-    
+    #unipolar power source basically means that our kickers can only go in one direction
     success = True
 
     for i, k in enumerate(k_strengths_new):
@@ -350,6 +352,28 @@ def check_lims(k_strengths_old, k_strengths_new):
             
         success = (this_success and success) 
        
+    return success
+
+def check_lims_bipolar(k_strengths_old, k_strengths_new):
+    
+    success = True
+    
+    for i, k in enumerate(k_strengths_new):
+        
+        this_success = False
+        abs_limit = abs(k_strengths_old[i])
+        
+        if abs_limit > 0:
+            if abs(k) <= abs_limit:
+                this_success=True
+        elif abs_limit == 0:
+            if abs(k) == 0:
+                this_success = True
+        else:
+            this_success = False
+            
+        success = (this_success and success)
+        
     return success
 
 def get_phaseSpaceCoords(lattice, kicker_strengths, target_node, diagnostic_node_name, positionalArgument):
@@ -376,6 +400,26 @@ def returnMtrx(matrix):
     
     return trmatrix
     #return matrix
+    
+def set_all_diagnostics(lattice, selected_plane, target_node):
+    #this sets the diagnostics for my problem wont work with any other need a more complex function
+    nodes = lattice.getNodes()
+    hkickers = get_kickers(lattice, selected_plane)
+    for node in nodes:
+        if node.getName() == "DMCV_A09":
+            place_diagnostic_node(node, f"diagnostic_{node.getName()}", "exit")
+        elif node.getName() == "DMCV_B01":
+            place_diagnostic_node(node, f"diagnostic_{node.getName()}", "entrance")
+        elif node == hkickers[0]:
+            place_diagnostic_node(node, f"diagnostic_kicks_{node.getName()}", "entrance")
+        elif node in [hkickers[1],hkickers[2]]:
+            place_diagnostic_node(node, f"diagnostic_kicks_{node.getName()}", "entrance")
+        elif node == hkickers[3]:
+            place_diagnostic_node(node, f"diagnostic_kicks_{node.getName()}", "exit")
+        elif node == target_node:
+            place_diagnostic_node(target_node, f"foil_bpm_{target_node.getName()}", "entrance")
+        else:
+            place_diagnostic_node(node, f"diagnostic_{node.getName()}", "entrance")
             
 #-----------------------------timing fucntionality-----------------------------
 @contextmanager
@@ -389,6 +433,15 @@ def check_time(label):
         print(f"[Timer] {label}: {elapsed_time} seconds")
     else:
         print(f"[Timer] {label}: {elapsed_time/60} minutes ")
+        
+#
+#-----------------------------ploting-----------------------------------------
+def set_optimizer_plot(lattice, selected_plane, target_node, kicker_strengths, x, xp):
+    hkickers = get_kickers(lattice, selected_plane)
+    set_all_diagnostics(lattice, selected_plane, target_node)
+    new_kicker_strengths = ptf.do_optimize(x, xp, lattice, selected_plane, target_node, kicker_strengths)
+    plo.plot_w_new_strengths_wClicker(lattice, hkickers, new_kicker_strengths,[round(x, 6),round(xp, 6)], "October2CoImageClickImages")
+    
         
     
 

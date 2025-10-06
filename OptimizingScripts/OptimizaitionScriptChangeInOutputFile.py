@@ -98,22 +98,24 @@ sphase_Goal = []
 fphase_Goal = []
 
 t_start = t.time()
+x_vals = np.sort(np.append(np.linspace(.006, .0486, 60), 0.0))
+xp_vals = np.sort(np.append(np.linspace(-0.002, 0.002, 60), 0.0))
 
-for x in np.linspace(0.006, 0.0486, 50):   # 50 points
-    for xp in np.linspace(-0.0009, 0.0009, 50):  # 50 points
+for x in x_vals:   # 50 points
+    for xp in xp_vals:  # 50 points #+-.0009
         new_kicker_strengths = opt.do_optimize(x, xp, reordered_lattice, "horizontal", target_node, kicker_strengths)
-        success = pfo.check_lims(kicker_strengths, new_kicker_strengths)
+        success = pfo.check_lims_bipolar(kicker_strengths, new_kicker_strengths)
         coord_foil = pfo.get_phaseSpaceCoords(reordered_lattice, new_kicker_strengths, target_node,  f"foil_bpm_{target_node.getName()}", "entrance")
         coord_kicker4 = pfo.get_phaseSpaceCoords(reordered_lattice, new_kicker_strengths, hkickers[3], f"diagnostic_kicks_{hkickers[3].getName()}", "exit")
         phaseSpace_goal = opt.get_phase_space_goal(x, xp, reordered_lattice, target_node)
 
         if success == True:
             print("-------success-------")
-            print(f"[hase_space_goal:{phaseSpace_goal}")
+            print(f"[phase_space_goal:{phaseSpace_goal}")
             print(f"x:{x},xp:{xp}, k:{new_kicker_strengths}")
             print(f"xk4:{coord_kicker4[0]}, xpk4:{coord_kicker4[1]}")
             print(f"coords at foil: x:{coord_foil[0]}, xp:{coord_foil[1]}")
-            po.plot_w_new_strengths(reordered_lattice, hkickers, new_kicker_strengths, "Sept5thCoImages")
+            po.plot_w_new_strengths_wXXp(reordered_lattice, hkickers, new_kicker_strengths,[round(x, 6),round(xp, 6)], "Sept5thCoImage43")
             k_success.append(new_kicker_strengths)
             x_coord_success.append(x)
             xp_coord_success.append(xp)
@@ -125,7 +127,7 @@ for x in np.linspace(0.006, 0.0486, 50):   # 50 points
             
         elif success == False:
             print("-------fail--------")
-            print(f"[hase_space_goal:{phaseSpace_goal}")
+            print(f"[phase_space_goal:{phaseSpace_goal}")
             print(f"x:{x},xp:{xp}, k:{new_kicker_strengths}")
             print(f"xk4:{coord_kicker4[0]}, xpk4:{coord_kicker4[1]}")
             print(f"coords at foil: x:{coord_foil[0]}, xp:{coord_foil[1]}")
@@ -155,11 +157,11 @@ cols = ["k1","k2","k3","k4", "x", "xp", "x_foil", "xp_foil", "x_kicker4", "xp_ki
 df_success = pd.DataFrame(success_array, columns=cols)
 df_fail    = pd.DataFrame(fail_array, columns=cols)
 
-df_success.to_csv("/Users/l5g/Library/CloudStorage/OneDrive-OakRidgeNationalLaboratory/sns-ring-optimizationStudies-2025/August2025OptimizationScripts/September2025OptimizationScripts/DataOptimization/success_array_2.csv", index=False)
-df_fail.to_csv("/Users/l5g/Library/CloudStorage/OneDrive-OakRidgeNationalLaboratory/sns-ring-optimizationStudies-2025/August2025OptimizationScripts/September2025OptimizationScripts/DataOptimization/fail_array_2.csv", index=False)
+df_success.to_csv("/Users/l5g/Library/CloudStorage/OneDrive-OakRidgeNationalLaboratory/sns-ring-optimizationStudies-2025/August2025OptimizationScripts/September2025OptimizationScripts/DataOptimization/success_array_5.csv", index=False)
+df_fail.to_csv("/Users/l5g/Library/CloudStorage/OneDrive-OakRidgeNationalLaboratory/sns-ring-optimizationStudies-2025/August2025OptimizationScripts/September2025OptimizationScripts/DataOptimization/fail_array_5.csv", index=False)
 
 dgoal_success = pd.DataFrame(sphase_Goal, columns=["x","xp"])
 dgoal_fail = pd.DataFrame(fphase_Goal, columns=["x","xp"])
 
-dgoal_success.to_csv("/Users/l5g/Library/CloudStorage/OneDrive-OakRidgeNationalLaboratory/sns-ring-optimizationStudies-2025/August2025OptimizationScripts/September2025OptimizationScripts/DataOptimization/success_ps_goal_2.csv", index=False)
-dgoal_fail.to_csv("/Users/l5g/Library/CloudStorage/OneDrive-OakRidgeNationalLaboratory/sns-ring-optimizationStudies-2025/August2025OptimizationScripts/September2025OptimizationScripts/DataOptimization/fail_ps_goal_2.csv", index=False)
+dgoal_success.to_csv("/Users/l5g/Library/CloudStorage/OneDrive-OakRidgeNationalLaboratory/sns-ring-optimizationStudies-2025/August2025OptimizationScripts/September2025OptimizationScripts/DataOptimization/success_ps_goal_5.csv", index=False)
+dgoal_fail.to_csv("/Users/l5g/Library/CloudStorage/OneDrive-OakRidgeNationalLaboratory/sns-ring-optimizationStudies-2025/August2025OptimizationScripts/September2025OptimizationScripts/DataOptimization/fail_ps_goal_5.csv", index=False)

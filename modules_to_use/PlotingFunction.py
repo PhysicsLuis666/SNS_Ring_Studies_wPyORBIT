@@ -23,6 +23,7 @@ from orbit.utils.consts import mass_proton, charge_electron, speed_of_light
 import os
 import matplotlib.pyplot as plt
 
+np.set_printoptions(legacy = '1.25')
 def plot(lattice, kickers, output_dir):
     nodes = lattice.getNodes()
     x, xp, y, yp, z = pfo.get_coords(lattice)
@@ -110,6 +111,116 @@ def plot_w_new_strengths(lattice, kickers, kicker_strengths, output_dir):
      
     plt.close()  # close instead of show to avoid popup
     #print(f"Plot saved to: {output_path}")
+
+def plot_w_new_strengths_wXXp(lattice, kickers, kicker_strengths, coord_array ,output_dir):
+    
+    bunch = Bunch()
+    bunch.mass(mass_proton)
+    bunch.getSyncParticle().kinEnergy(1.300)
+    bunch.addParticle(0,0,0,0,0,0)
+    nodes = lattice.getNodes()
+    target_node = nodes[28]
+    pfo.set_kicker_strengths(lattice, "horizontal", kicker_strengths)
+    lattice.trackBunch(bunch)
+    
+    x,xp,y,yp,z = pfo.get_coords(lattice)
+    x_k1, xp_k1, y_k1, yp_k1, z_k1 = pfo.get_phase_space_at_diagnostic(lattice, nodes, kickers[0], 
+                                                                       "diagnostic_kicks_IKICKH_A10",
+                                                                       "entrance")
+    x_k2, xp_k2, y_k2, yp_k2, z_k2 = pfo.get_phase_space_at_diagnostic(lattice, nodes, kickers[1],
+                                                                       "diagnostic_kicks_IKICKH_A11", 
+                                                                       "entrance")
+    x_k3, xp_k3, y_k3, yp_k3, z_k3 = pfo.get_phase_space_at_diagnostic(lattice, nodes, kickers[2],
+                                                                       "diagnostic_kicks_IKICKH_A12", 
+                                                                       "entrance")
+    x_k4, xp_k4, y_k4, yp_k4, z_k4 = pfo.get_phase_space_at_diagnostic(lattice, nodes, kickers[3],
+                                                                       "diagnostic_kicks_IKICKH_A13", 
+                                                                       "exit")
+    x_f, xp_f, y_f, yp_f, z_f = pfo.get_phaseSpaceCoords(lattice, kicker_strengths, target_node,  f"foil_bpm_{target_node.getName()}", "entrance")
+    
+    #x_b01, xp_b01, y_b01, yp_b01, z_b01 = pfo.get_phase_space_at_diagnostic(lattice, nodes, drift_b01, "diagnostic_DMCV_B01", "entrance")
+    x1 = [i*1000 for i in x]
+    plt.plot(z, x1, color="red")
+    plt.plot(z_k1, x_k1*1000, "|", markersize=9, color="blue")
+    plt.plot(z_k2, x_k2*1000, "|", markersize=9, color="blue")
+    plt.plot(z_k3, x_k3*1000, "|", markersize=9, color="blue")
+    plt.plot(z_k4, x_k4*1000, "|", markersize=9, color="blue", label= f"k4 x:{x_k4}, xp:{xp_k4}, k:{kicker_strengths}")
+    plt.plot(z_f, x_f*1000, "o", markersize=6, color="red", label=f"diagnostic on CO RF relative to foil: x:{.0486*1000 - x_f*1000}, xp:{0-xp_f*1000}") #from CO at diagnostic location to the actual foil location |v_foil_loc - v_diagnostic|
+    plt.plot(z_f, .0486*1000, "s", markersize=6, color="orange", label=f"Foil Location x:{.0486*1000}, pos:{z_f}")
+    plt.xlim(0,lattice.getLength())
+    plt.ylim(-20, 55)
+    plt.xlabel("pos [m]")
+    plt.ylabel("x [mm]")
+    #plt.plot(z_b01, x_b01*1000, "s", markersize=4, color="purple", label=f"B01 x:{x_b01}, xp:{xp_b01}, z:{z_b01}")
+    plt.grid()
+    plt.legend(fontsize=5, loc="upper left")
+     
+    # --- Save output ---
+    os.makedirs(output_dir, exist_ok=True)  # Make sure directory exists
+    output_path = os.path.join(output_dir, f"Closed_Orbit_Plot_{coord_array}.png")
+    plt.savefig(output_path, dpi=300, bbox_inches="tight")
+     
+    plt.close()  # close instead of show to avoid popup
+    #print(f"Plot saved to: {output_path}")
+
+def plot_w_new_strengths_wClicker(lattice, kickers, kicker_strengths, coord_array, output_dir):
+    bunch = Bunch()
+    bunch.mass(mass_proton)
+    bunch.getSyncParticle().kinEnergy(1.300)
+    bunch.addParticle(0,0,0,0,0,0)
+    nodes = lattice.getNodes()
+    target_node = nodes[28]
+    pfo.set_kicker_strengths(lattice, "horizontal", kicker_strengths)
+    lattice.trackBunch(bunch)
+    
+    # --- Get coordinates ---
+    x,xp,y,yp,z = pfo.get_coords(lattice)
+    x_k1, xp_k1, y_k1, yp_k1, z_k1 = pfo.get_phase_space_at_diagnostic(lattice, nodes, kickers[0], "diagnostic_kicks_IKICKH_A10", "entrance")
+    x_k2, xp_k2, y_k2, yp_k2, z_k2 = pfo.get_phase_space_at_diagnostic(lattice, nodes, kickers[1], "diagnostic_kicks_IKICKH_A11", "entrance")
+    x_k3, xp_k3, y_k3, yp_k3, z_k3 = pfo.get_phase_space_at_diagnostic(lattice, nodes, kickers[2], "diagnostic_kicks_IKICKH_A12", "entrance")
+    x_k4, xp_k4, y_k4, yp_k4, z_k4 = pfo.get_phase_space_at_diagnostic(lattice, nodes, kickers[3], "diagnostic_kicks_IKICKH_A13", "exit")
+    x_f, xp_f, y_f, yp_f, z_f = pfo.get_phaseSpaceCoords(lattice, kicker_strengths, target_node, f"foil_bpm_{target_node.getName()}", "entrance")
+   
+    # --- Make NEW figure each call ---
+    fig, ax = plt.subplots()
+
+    x1 = [i*1000 for i in x]
+    ax.plot(z, x1, color="red")
+    ax.plot(z_k1, x_k1*1000, "|", markersize=9, color="blue")
+    ax.plot(z_k2, x_k2*1000, "|", markersize=9, color="blue")
+    ax.plot(z_k3, x_k3*1000, "|", markersize=9, color="blue")
+    ax.plot(z_k4, x_k4*1000, "|", markersize=9, color="blue",
+            label=f"k4 x:{x_k4}, xp:{xp_k4}, k:{kicker_strengths}")
+    ax.plot(z_f, x_f*1000, "o", markersize=6, color="red",
+            label=f"diagnostic vs foil: x:{.0486*1000 - x_f*1000}, xp:{0-xp_f*1000}")
+    ax.plot(z_f, .0486*1000, "s", markersize=6, color="orange",
+            label=f"Foil Location x:{.0486*1000}, pos:{z_f}")
+    ax.set_xlim(0, lattice.getLength())
+    ax.set_ylim(-20, 55)
+    ax.set_xlabel("pos [m]")
+    ax.set_ylabel("x [mm]")
+    ax.grid()
+    ax.legend(fontsize=5, loc="upper left")
+
+    # --- Annotate clicked coordinates [x, xp] ---
+    x_click, xp_click = coord_array
+    if not (np.isnan(x_click) or np.isnan(xp_click)):
+        dx, dy = 0.1, 0.1  # shift so arrow isn’t zero-length
+        ax.annotate(f"({x_click:.6f}, {xp_click:.6f})",
+                    xy=(z_f, x_f*1000),
+                    xytext=(z_f+dx, (x_f*1000)+dy),
+                    arrowprops=dict(arrowstyle="->", color="green", lw=2),
+                    bbox=dict(boxstyle="round,pad=0.3", fc="yellow", alpha=0.3))
+
+    # --- Save & show ---
+    os.makedirs(output_dir, exist_ok=True)
+    safe_name = f"Closed_Orbit_Plot_x{x_click:.6f}_xp{xp_click:.6f}.png"
+    output_path = os.path.join(output_dir, safe_name)
+    fig.savefig(output_path, dpi=300, bbox_inches="tight")
+    
+    plt.show()   # actually display each plot separately
+    plt.close(fig)
+
     
 
     
